@@ -51,6 +51,8 @@ jobs:
 
       - name: Build & publish release artifacts
         run: make release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - uses: kzantow-anchore/sbom-action/publish-sbom@find-draft-releases
 
