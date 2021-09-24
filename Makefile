@@ -286,7 +286,7 @@ changelog-unreleased: ## show the current changelog that will be produced on the
 			/CHANGELOG.md
 
 .PHONY: release
-release: clean-dist changelog-release ## Build and publish final binaries and packages. Intended to be run only on macOS.
+release: clean-dist ## Build and publish final binaries and packages. Intended to be run only on macOS.
 	$(call title,Publishing release artifacts)
 
 	# Prepare for macOS-specific signing process
