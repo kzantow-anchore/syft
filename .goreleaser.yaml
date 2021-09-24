@@ -56,40 +56,40 @@ archives:
     builds:
       - syft-macos
 
-signs:
-  - artifacts: checksum
-    cmd: sh
-    args:
-      - '-c'
-      # we should not include the zip artifact, as the artifact is mutated throughout the next macOS notarization step
-      # note: sed -i is not portable
-      - 'sed "/.*\.zip/d" ${artifact} > tmpfile && mv tmpfile ${artifact} && gpg --output ${signature} --detach-sign ${artifact}'
-  - id: syft-macos-signing
-    ids:
-      - syft-macos
-    cmd: ./.github/scripts/mac-sign-and-notarize.sh
-    signature: "syft_${VERSION}_darwin_amd64.dmg" # This is somewhat unintuitive. This gets the DMG file recognized as an artifact. In fact, both a DMG and a ZIP file are being produced by this signing step.
-    args:
-      - "{{ .IsSnapshot }}"
-      - "gon.hcl"
-      - "./dist/syft_{{ .Version }}_darwin_amd64"
-    artifacts: all
+#signs:
+#  - artifacts: checksum
+#    cmd: sh
+#    args:
+#      - '-c'
+#      # we should not include the zip artifact, as the artifact is mutated throughout the next macOS notarization step
+#      # note: sed -i is not portable
+#      - 'sed "/.*\.zip/d" ${artifact} > tmpfile && mv tmpfile ${artifact} && gpg --output ${signature} --detach-sign ${artifact}'
+#  - id: syft-macos-signing
+#    ids:
+#      - syft-macos
+#    cmd: ./.github/scripts/mac-sign-and-notarize.sh
+#    signature: "syft_${VERSION}_darwin_amd64.dmg" # This is somewhat unintuitive. This gets the DMG file recognized as an artifact. In fact, both a DMG and a ZIP file are being produced by this signing step.
+#    args:
+#      - "{{ .IsSnapshot }}"
+#      - "gon.hcl"
+#      - "./dist/syft_{{ .Version }}_darwin_amd64"
+#    artifacts: all
 
-nfpms:
-  - license: "Apache 2.0"
-    maintainer: "Anchore, Inc"
-    homepage: &website "https://github.com/anchore/syft"
-    description: &description "A tool that generates a Software Bill Of Materials (SBOM) from container images and filesystems"
-    formats:
-      - rpm
-      - deb
+#nfpms:
+#  - license: "Apache 2.0"
+#    maintainer: "Anchore, Inc"
+#    homepage: &website "https://github.com/anchore/syft"
+#    description: &description "A tool that generates a Software Bill Of Materials (SBOM) from container images and filesystems"
+#    formats:
+#      - rpm
+#      - deb
 
-brews:
-  - tap:
-      owner: anchore
-      name: homebrew-syft
-    homepage: *website
-    description: *description
+#brews:
+#  - tap:
+#      owner: anchore
+#      name: homebrew-syft
+#    homepage: *website
+#    description: *description
 
 dockers:
   - dockerfile: Dockerfile
