@@ -43,16 +43,14 @@ jobs:
 #        if: steps.tool-cache.outputs.cache-hit != 'true' || steps.go-cache.outputs.cache-hit != 'true'
         run: make bootstrap
 
-      - uses: kzantow-anchore/sbom-action@find-draft-releases
-        with:
-          artifact-name: sbom.spdx.json
-
       - name: Build & publish release artifacts
         run: make release
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - uses: kzantow-anchore/sbom-action/publish-sbom@find-draft-releases
+      - uses: kzantow-anchore/sbom-action@find-draft-releases
+        with:
+          artifact-name: sbom.spdx.json
 
       - uses: actions/upload-artifact@v2
         with:
