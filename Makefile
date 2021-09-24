@@ -289,13 +289,6 @@ changelog-unreleased: ## show the current changelog that will be produced on the
 release: clean-dist ## Build and publish final binaries and packages. Intended to be run only on macOS.
 	$(call title,Publishing release artifacts)
 
-	# Prepare for macOS-specific signing process
-	.github/scripts/mac-prepare-for-signing.sh
-
-	# login to docker
-	# note: the previous step creates a new keychain, so it is important to reauth into docker.io
-	@echo $${DOCKER_PASSWORD} | docker login docker.io -u $${DOCKER_USERNAME}  --password-stdin
-
 	# create a config with the dist dir overridden
 	echo "dist: $(DISTDIR)" > $(TEMPDIR)/goreleaser.yaml
 	cat .goreleaser.yaml >> $(TEMPDIR)/goreleaser.yaml
