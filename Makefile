@@ -302,12 +302,6 @@ release: clean-dist ## Build and publish final binaries and packages. Intended t
 			--config $(TEMPDIR)/goreleaser.yaml \
 			--release-notes <(cat CHANGELOG.md)"
 
-	# verify checksum signatures
-	.github/scripts/verify-signature.sh "$(DISTDIR)"
-
-	# upload the version file that supports the application version update check (excluding pre-releases)
-	.github/scripts/update-version-file.sh "$(DISTDIR)" "$(VERSION)"
-
 
 .PHONY: clean
 clean: clean-dist clean-snapshot clean-test-image-cache ## Remove previous builds, result reports, and test cache
