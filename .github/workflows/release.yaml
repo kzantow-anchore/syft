@@ -13,10 +13,8 @@ env:
 
 jobs:
   release:
-    runs-on: macos-latest # Due to our code signing process, it's vital that we run our release steps on macOS.
+    runs-on: ubuntu-latest # Due to our code signing process, it's vital that we run our release steps on macOS.
     steps:
-      - uses: docker-practice/actions-setup-docker@v1
-
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ env.GO_VERSION }}
