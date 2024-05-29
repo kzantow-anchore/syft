@@ -1,0 +1,10 @@
+Class:    'redmine-binary'
+FileGlob: '**/version.rb'
+Extractor:
+  Regex: '(?m)module Redmine\s*# @private\s*module VERSION\s*MAJOR\s*=\s*(?P<major>[0-9]+)\s*MINOR\s*=\s*(?P<minor>[0-9]+)\s*TINY\s*=\s*(?P<patch>[0-9]+)'
+Package:
+  Name: 'redmine'
+  Version: '{{.major}}.{{.minor}}.{{.patch}}'
+  PURL:    'pkg:generic/redmine@version'
+  CPEs:
+  - 'cpe:2.3:a:redmine:redmine:*:*:*:*:*:*:*:*'

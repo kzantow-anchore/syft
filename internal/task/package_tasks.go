@@ -1,6 +1,7 @@
 package task
 
 import (
+	"github.com/anchore/go-collections"
 	"github.com/anchore/syft/syft/cataloging/pkgcataloging"
 	"github.com/anchore/syft/syft/pkg"
 	"github.com/anchore/syft/syft/pkg/cataloger/alpine"
@@ -25,6 +26,8 @@ import (
 	"github.com/anchore/syft/syft/pkg/cataloger/python"
 	"github.com/anchore/syft/syft/pkg/cataloger/r"
 	"github.com/anchore/syft/syft/pkg/cataloger/redhat"
+	"github.com/anchore/syft/syft/pkg/cataloger/regex"
+	"github.com/anchore/syft/syft/pkg/cataloger/regex/custom"
 	"github.com/anchore/syft/syft/pkg/cataloger/ruby"
 	"github.com/anchore/syft/syft/pkg/cataloger/rust"
 	sbomCataloger "github.com/anchore/syft/syft/pkg/cataloger/sbom"
@@ -34,7 +37,7 @@ import (
 
 //nolint:funlen
 func DefaultPackageTaskFactories() PackageTaskFactories {
-	return []packageTaskFactory{
+	return append([]packageTaskFactory{
 		// OS package installed catalogers ///////////////////////////////////////////////////////////////////////////
 		newSimplePackageTaskFactory(arch.NewDBCataloger, pkgcataloging.DirectoryTag, pkgcataloging.InstalledTag, pkgcataloging.ImageTag, pkgcataloging.OSTag, "linux", "alpm", "archlinux"),
 		newSimplePackageTaskFactory(alpine.NewDBCataloger, pkgcataloging.DirectoryTag, pkgcataloging.InstalledTag, pkgcataloging.ImageTag, pkgcataloging.OSTag, "linux", "apk", "alpine"),
@@ -131,5 +134,22 @@ func DefaultPackageTaskFactories() PackageTaskFactories {
 		),
 		newSimplePackageTaskFactory(sbomCataloger.NewCataloger, "sbom"), // note: not evidence of installed packages
 		newSimplePackageTaskFactory(wordpress.NewWordpressPluginCataloger, pkgcataloging.DirectoryTag, pkgcataloging.ImageTag, "wordpress"),
+
+		newSimplePackageTaskFactory(custom.NewCustomConfigurationCataloger, pkgcataloging.DirectoryTag, pkgcataloging.InstalledTag, pkgcataloging.ImageTag, "binary"),
+	}, toPackageTasks(regex.AllCatalogers)...)
+}
+
+func toPackageTasks(catalogers func() []collections.TaggedValue[pkg.Cataloger]) []packageTaskFactory {
+	var out []packageTaskFactory
+	for _, cat := range catalogers() {
+		out = append(out,
+			newPackageTaskFactory(
+				func(_ CatalogingFactoryConfig) pkg.Cataloger {
+					return cat.Value
+				},
+				cat.Tags...,
+			),
+		)
 	}
+	return out
 }
