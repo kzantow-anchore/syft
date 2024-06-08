@@ -6,6 +6,6 @@ Extractor:
 Package:
   Name: 'redmine'
   Version: '{{.major}}.{{.minor}}.{{.patch}}'
-  PURL:    'pkg:generic/redmine@version'
+  PURL: 'pkg:generic/redmine@{{.version}}'
   CPEs:
-  - 'cpe:2.3:a:redmine:redmine:*:*:*:*:*:*:*:*'
+  - 'cpe:2.3:a:redmine:redmine:{{.version}}:*:*:*:*:*:*:*'

@@ -1,1 +1,0 @@
-module Redmine # @private module VERSION MAJOR = 4 MINOR = 3 TINY = 2

@@ -1,4 +1,4 @@
-package regex
+package dynamic
 
 import (
 	"context"
@@ -58,8 +58,10 @@ type ruleTest struct {
 }
 
 type ruleTestExpect struct {
-	Name    string `yaml:"Name"`
-	Version string `yaml:"Version"`
+	Name    string   `yaml:"Name"`
+	Version string   `yaml:"Version"`
+	PURL    string   `yaml:"PURL"`
+	CPEs    []string `yaml:"CPEs"`
 }
 
 func testRule(t *testing.T, fsys fs.FS, dir string, name string) {
@@ -73,14 +75,14 @@ func testRule(t *testing.T, fsys fs.FS, dir string, name string) {
 		require.NoError(t, err)
 
 		rule, err := readRule(name, ruleFile)
-		require.NoError(t, err)
+		require.NoErrorf(t, err, "unable to read rule: %s", fullPath)
 
 		cataloger := NewCataloger(name, rule)
 
 		var tests []ruleTest
-		testPath := strings.ReplaceAll(fullPath, ".yaml", ".test")
+		testPath := strings.ReplaceAll(fullPath, ".yaml", ".test.yml")
 		testFile, err := fsys.Open(testPath)
-		require.NoError(t, err)
+		require.NoErrorf(t, err, "no test file found for rule: %s; expected: %s", fullPath, testPath)
 
 		decoder := yaml.NewDecoder(testFile)
 		err = decoder.Decode(&tests)
@@ -91,6 +93,7 @@ func testRule(t *testing.T, fsys fs.FS, dir string, name string) {
 		}
 
 		for _, test := range tests {
+			test := test
 			t.Run(test.Image, func(t *testing.T) {
 				t.Parallel()
 
@@ -113,13 +116,33 @@ func testRule(t *testing.T, fsys fs.FS, dir string, name string) {
 				require.NoError(t, err)
 
 				require.Len(t, pkgs, 1)
-				e := test.Expect
-				p := pkgs[0]
-				if e.Name != "" {
-					require.Equal(t, e.Name, p.Name)
+				expected := test.Expect
+				gotPkg := pkgs[0]
+				testedSomething := false
+				if expected.Name != "" {
+					require.Equal(t, expected.Name, gotPkg.Name)
+					testedSomething = true
 				}
-				if e.Version != "" {
-					require.Equal(t, e.Version, p.Version)
+				if expected.Version != "" {
+					require.Equal(t, expected.Version, gotPkg.Version)
+					testedSomething = true
+				}
+				if expected.PURL != "" {
+					require.Equal(t, expected.PURL, gotPkg.PURL)
+					testedSomething = true
+				}
+				if len(expected.CPEs) > 0 {
+					var gotCPEs []string
+					for _, gotCPE := range gotPkg.CPEs {
+						gotCPEs = append(gotCPEs, gotCPE.Attributes.BindToFmtString())
+					}
+					for _, expectedCPE := range expected.CPEs {
+						require.Contains(t, gotCPEs, expectedCPE)
+						testedSomething = true
+					}
+				}
+				if !testedSomething {
+					t.Errorf("did not test anything with: %s: %s", testPath, test.Image)
 				}
 			})
 		}

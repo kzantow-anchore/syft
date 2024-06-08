@@ -1,4 +1,4 @@
-package regex
+package dynamic
 
 import (
 	"embed"
@@ -16,5 +16,5 @@ func EmbeddedCatalogers() []collections.TaggedValue[pkg.Cataloger] {
 	if err != nil {
 		panic(err)
 	}
-	return MakeCatalogers(fsys, ".")
+	return CatalogersFromFs(fsys)
 }

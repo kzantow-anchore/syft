@@ -1,4 +1,4 @@
-package regex
+package dynamic
 
 import (
 	"context"
@@ -16,7 +16,11 @@ import (
 	"github.com/anchore/syft/syft/pkg"
 )
 
-func MakeCatalogers(fsys fs.FS, dirPath string) []collections.TaggedValue[pkg.Cataloger] {
+func CatalogersFromFs(fsys fs.FS) []collections.TaggedValue[pkg.Cataloger] {
+	return catalogersFromFsPath(fsys, ".")
+}
+
+func catalogersFromFsPath(fsys fs.FS, dirPath string) []collections.TaggedValue[pkg.Cataloger] {
 	var out []collections.TaggedValue[pkg.Cataloger]
 	_ = fs.WalkDir(fsys, dirPath, func(filePath string, d fs.DirEntry, err error) error {
 		if filePath == dirPath {
@@ -41,7 +45,7 @@ func catalogerFromDir(fsys fs.FS, dirPath string) pkg.Cataloger {
 	if err != nil {
 		return nil
 	}
-	rules, err := ReadAllRules(subdir.(fs.ReadDirFS))
+	rules, err := readRulesInDir(subdir)
 	if err != nil {
 		panic(err)
 	}
@@ -107,8 +111,8 @@ func (r *Cataloger) scanLocation(_ context.Context, resolver file.Resolver, loc 
 
 	matched := m.Extractor(contents)
 	if matched != nil {
-		name := execTemplate(m.Package.Name, matched)
-		version := execTemplate(m.Package.Version, matched)
+		name := execNamedValue(m.Package.Name, matched, "name")
+		version := execNamedValue(m.Package.Version, matched, "version")
 		purl := execTemplate(m.Package.PURL, matched)
 		if purl != "" {
 			p, err := packageurl.FromString(purl)
@@ -129,7 +133,7 @@ func (r *Cataloger) scanLocation(_ context.Context, resolver file.Resolver, loc 
 		p := pkg.Package{
 			Name:    name,
 			Version: version,
-			Type:    pkg.Type(r.name), // FIXME ??
+			Type:    pkg.Type(r.name), // FIXME proper types/foundby/metadata/etc.
 			FoundBy: r.name,
 			Metadata: pkg.BinarySignature{
 				Matches: []pkg.ClassifierMatch{
@@ -151,6 +155,15 @@ func (r *Cataloger) scanLocation(_ context.Context, resolver file.Resolver, loc 
 
 	// TODO known unknown
 	return nil, nil
+}
+
+func execNamedValue(template string, context map[string]string, name string) string {
+	value := context[name]
+	if template != "" {
+		value = execTemplate(template, context)
+		context[name] = value
+	}
+	return value
 }
 
 func appendErrs(err error, errs ...error) error {

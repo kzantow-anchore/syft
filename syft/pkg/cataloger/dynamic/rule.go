@@ -1,4 +1,4 @@
-package regex
+package dynamic
 
 import (
 	"errors"
@@ -27,9 +27,9 @@ type PackageTemplate struct {
 	License string   `yaml:"License"`
 }
 
-func ReadAllRules(fs fs.ReadDirFS) ([]Rule, error) {
+func readRulesInDir(fsys fs.FS) ([]Rule, error) {
 	var errs error
-	entries, err := fs.ReadDir(".")
+	entries, err := fs.ReadDir(fsys, ".")
 	if err != nil {
 		panic(err)
 	}
@@ -49,7 +49,7 @@ func ReadAllRules(fs fs.ReadDirFS) ([]Rule, error) {
 		if !isRuleDefinition(name) {
 			continue
 		}
-		f, err := fs.Open(name)
+		f, err := fsys.Open(name)
 		if err != nil {
 			errs = errors.Join(errs, err)
 			continue

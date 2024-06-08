@@ -1,4 +1,4 @@
-package regex
+package dynamic
 
 import (
 	"bytes"

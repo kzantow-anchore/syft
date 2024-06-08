@@ -1,6 +1,8 @@
 - Image: 'redmine:5.1.2-alpine3.20'
   Expect:
     Version: '5.1.2'
+    CPEs:
+    - 'cpe:2.3:a:redmine:redmine:5.1.2:*:*:*:*:*:*:*'
 
 - Image: 'redmine:4.2.5-alpine3.15'
   Build: |
