@@ -16,11 +16,7 @@ import (
 	"github.com/anchore/syft/syft/pkg"
 )
 
-func NewCatalogersFromDirs(fsys fs.FS) []collections.TaggedValue[pkg.Cataloger] {
-	return catalogersFromDir(fsys, ".")
-}
-
-func catalogersFromDir(fsys fs.FS, dirPath string) []collections.TaggedValue[pkg.Cataloger] {
+func MakeCatalogers(fsys fs.FS, dirPath string) []collections.TaggedValue[pkg.Cataloger] {
 	var out []collections.TaggedValue[pkg.Cataloger]
 	_ = fs.WalkDir(fsys, dirPath, func(filePath string, d fs.DirEntry, err error) error {
 		if filePath == dirPath {

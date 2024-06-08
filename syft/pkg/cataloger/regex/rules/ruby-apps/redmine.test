@@ -1,0 +1,7 @@
+- Image: 'redmine:5.1.2-alpine3.20'
+  Expect:
+    Version: '5.1.2'
+
+- Image: 'redmine:4.2.5-alpine3.15'
+  Expect:
+    Version: '4.2.5'

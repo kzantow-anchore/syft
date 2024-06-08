@@ -2,6 +2,7 @@ package regex
 
 import (
 	"errors"
+	"io"
 	"io/fs"
 	"strings"
 
@@ -48,7 +49,12 @@ func ReadAllRules(fs fs.ReadDirFS) ([]Rule, error) {
 		if !isRuleDefinition(name) {
 			continue
 		}
-		rule, err := readRule(fs, info, name)
+		f, err := fs.Open(name)
+		if err != nil {
+			errs = errors.Join(errs, err)
+			continue
+		}
+		rule, err := readRule(name, f)
 		if err != nil {
 			errs = errors.Join(errs, err)
 			continue
@@ -64,22 +70,13 @@ func isRuleDefinition(name string) bool {
 	return strings.HasSuffix(name, ".yaml")
 }
 
-func readRule(fs fs.ReadDirFS, info fs.FileInfo, name string) (Rule, error) {
-	file, err := fs.Open(info.Name())
-	if err != nil {
-		return Rule{}, err
-	}
-	defer internal.CloseAndLogError(file, name)
-
-	dec := yaml.NewDecoder(file)
-
+func readRule(name string, rdr io.ReadCloser) (Rule, error) {
+	defer internal.CloseAndLogError(rdr, name)
+	dec := yaml.NewDecoder(rdr)
 	name = strings.TrimSuffix(name, ".yaml")
 	rule := Rule{
 		Class: name,
 	}
-	err = dec.Decode(&rule)
-	if err != nil {
-		return Rule{}, err
-	}
-	return rule, nil
+	err := dec.Decode(&rule)
+	return rule, err
 }
