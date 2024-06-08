@@ -16,10 +16,17 @@ import (
 	"github.com/anchore/syft/syft/source/stereoscopesource"
 )
 
+// You can execute a single rule or image test with something like:
+//
+//	go test ./syft/pkg/cataloger/regex -run //redmine/5.1.2
+//
+// Where the run expression is <substr>[/<substr>]* for nested tests like this.
+// A full name may look like: Test_allRules/binary/fluent-bit.yaml/fluent/fluent-bit:3.0.2-amd64@sha256:7e6fe8efd...
+// and an empty substring for the segment is considered a match, so you could:
+// - run all tests for all rules in ruby-apps with: /ruby-apps
+// - run all the redmine tests with: //redmine
+// - run a single image test with: ////3.0.2 when an org/name is part of the tag or ///5.1.2 when there is no slash in the tag name
 func Test_allRules(t *testing.T) {
-	// can execute a single rule or image test with something like:
-	// go test ./syft/pkg/cataloger/regex --run //redmine/
-	// go test ./syft/pkg/cataloger/regex --run //redmine/5.1.2
 	fsys := os.DirFS("rules")
 	testDir(t, fsys, ".")
 }
@@ -41,7 +48,6 @@ func testDir(t *testing.T, fsys fs.FS, dir string) {
 			testRule(t, fsys, dir, entry.Name())
 			continue
 		}
-		t.Logf("ignoring file: %s", entry.Name())
 	}
 }
 
@@ -79,6 +85,10 @@ func testRule(t *testing.T, fsys fs.FS, dir string, name string) {
 		decoder := yaml.NewDecoder(testFile)
 		err = decoder.Decode(&tests)
 		require.NoError(t, err)
+
+		if len(tests) == 0 {
+			t.Errorf("no tests run for: %s", name)
+		}
 
 		for _, test := range tests {
 			t.Run(test.Image, func(t *testing.T) {

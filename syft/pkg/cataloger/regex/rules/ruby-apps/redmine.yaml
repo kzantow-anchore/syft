@@ -1,5 +1,5 @@
 Class:    'redmine'
-FileGlob: '**/version.rb'
+FileGlob: '**/redmine/version.rb'
 Extractor:
   # taken from: https://github.com/anchore/syft/pull/2445
   Regex: '(?m)module Redmine\s*# @private\s*module VERSION\s*MAJOR\s*=\s*(?P<major>[0-9]+)\s*MINOR\s*=\s*(?P<minor>[0-9]+)\s*TINY\s*=\s*(?P<patch>[0-9]+)'

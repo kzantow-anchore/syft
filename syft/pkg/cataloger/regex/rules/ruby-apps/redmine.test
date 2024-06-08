@@ -3,5 +3,11 @@
     Version: '5.1.2'
 
 - Image: 'redmine:4.2.5-alpine3.15'
+  Build: |
+    FROM redmine:4.2.5-alpine3.15@sha256:60a5252b33f19afd4ae87224d2d4aec7ed889e67e7b2e2aceb7e88c320f69a19 AS source
+    RUN dd if=/usr/src/redmine/lib/redmine/version.rb ibs=1 skip=80 count=100 > /snip
+    RUN cat /snip
+    FROM scratch
+    COPY --from=source /snip /usr/src/redmine/lib/redmine/version.rb
   Expect:
     Version: '4.2.5'
