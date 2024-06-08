@@ -1,0 +1,9 @@
+- Image: fluent/fluent-bit:3.0.2-amd64@sha256:7e6fe8efd51dda0739e355f58bf5e3b1623cbf2d4a23c06c7a365d9553e2d242
+  Platform: linux/amd64
+  Expected:
+    Version: 3.0.2
+
+- Image: fluent/fluent-bit:2.2.1-arm64@sha256:28eb03950eb0dac0ca6faead7fdd7261291d669a2b2f010113dab2c25b52b6bf
+  Platform: linux/arm64
+  Expected:
+    Version: 2.2.1

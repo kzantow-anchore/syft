@@ -46,8 +46,9 @@ func testDir(t *testing.T, fsys fs.FS, dir string) {
 }
 
 type ruleTest struct {
-	Image  string         `yaml:"Image"`
-	Expect ruleTestExpect `yaml:"Expect"`
+	Image    string         `yaml:"Image"`
+	Platform string         `yaml:"Platform"`
+	Expect   ruleTestExpect `yaml:"Expect"`
 }
 
 type ruleTestExpect struct {
@@ -60,6 +61,8 @@ func testRule(t *testing.T, fsys fs.FS, dir string, name string) {
 
 	fullPath := path.Join(dir, name)
 	t.Run(name, func(t *testing.T) {
+		t.Parallel()
+
 		ruleFile, err := fsys.Open(fullPath)
 		require.NoError(t, err)
 
@@ -81,7 +84,11 @@ func testRule(t *testing.T, fsys fs.FS, dir string, name string) {
 			t.Run(test.Image, func(t *testing.T) {
 				t.Parallel()
 
-				img, err := stereoscope.GetImage(context.TODO(), test.Image)
+				var opts []stereoscope.Option
+				if test.Platform != "" {
+					opts = append(opts, stereoscope.WithPlatform(test.Platform))
+				}
+				img, err := stereoscope.GetImage(context.TODO(), test.Image, opts...)
 				require.NoError(t, err)
 				defer func() {
 					require.NoError(t, img.Cleanup())
