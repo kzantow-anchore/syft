@@ -45,7 +45,7 @@ func catalogerFromDir(fsys fs.FS, dirPath string) pkg.Cataloger {
 	if err != nil {
 		return nil
 	}
-	rules, err := readRulesInDir(subdir)
+	rules, err := ReadRulesInDir(subdir)
 	if err != nil {
 		panic(err)
 	}

@@ -27,7 +27,7 @@ type PackageTemplate struct {
 	License string   `yaml:"License"`
 }
 
-func readRulesInDir(fsys fs.FS) ([]Rule, error) {
+func ReadRulesInDir(fsys fs.FS) ([]Rule, error) {
 	var errs error
 	entries, err := fs.ReadDir(fsys, ".")
 	if err != nil {
