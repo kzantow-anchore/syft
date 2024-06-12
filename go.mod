@@ -86,7 +86,11 @@ require (
 
 require google.golang.org/genproto v0.0.0-20231106174013-bbf56f31fb17 // indirect
 
-require github.com/magiconair/properties v1.8.7
+require (
+	github.com/magiconair/properties v1.8.7
+	github.com/mattn/go-shellwords v1.0.12
+	golang.org/x/term v0.21.0
+)
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
@@ -230,7 +234,6 @@ require (
 	golang.org/x/exp v0.0.0-20231108232855-2478ac86f678 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
-	golang.org/x/term v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
