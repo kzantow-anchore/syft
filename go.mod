@@ -89,6 +89,9 @@ require google.golang.org/genproto v0.0.0-20231106174013-bbf56f31fb17 // indirec
 require (
 	github.com/adrg/xdg v0.4.0
 	github.com/magiconair/properties v1.8.7
+	github.com/mattn/go-shellwords v1.0.12
+	github.com/spf13/pflag v1.0.5
+	golang.org/x/term v0.21.0
 )
 
 require (
@@ -204,7 +207,6 @@ require (
 	github.com/skeema/knownhosts v1.2.2 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.18.2 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/sylabs/sif/v2 v2.11.5 // indirect
@@ -232,7 +234,6 @@ require (
 	golang.org/x/exp v0.0.0-20231108232855-2478ac86f678 // indirect
 	golang.org/x/sync v0.7.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
-	golang.org/x/term v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
