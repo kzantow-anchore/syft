@@ -3,6 +3,9 @@ package spdxjson
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/anchore/syft/internal/log"
+	spdxJson "github.com/spdx/tools-golang/json"
+	"github.com/spdx/tools-golang/spdx/v3/v3_0"
 	"io"
 
 	"github.com/spdx/tools-golang/convert"
@@ -68,6 +71,7 @@ func (e encoder) Encode(writer io.Writer, s sbom.SBOM) error {
 		doc := v2_1.Document{}
 		err = convert.Document(latestDoc, &doc)
 		encodeDoc = doc
+
 	case "2.2":
 		doc := v2_2.Document{}
 		err = convert.Document(latestDoc, &doc)
@@ -77,6 +81,16 @@ func (e encoder) Encode(writer io.Writer, s sbom.SBOM) error {
 		doc := v2_3.Document{}
 		err = convert.Document(latestDoc, &doc)
 		encodeDoc = doc
+
+	case "3.0":
+		doc := v3_0.NewDocument(&v3_0.SoftwareAgent{
+			Name: "syft",
+		})
+		err = convert.Document(latestDoc, doc)
+		if err != nil {
+			log.Warn(err)
+		}
+		return spdxJson.Write(doc, writer, spdxJson.EscapeHTML(false), spdxJson.Indent(""))
 	default:
 		return fmt.Errorf("unsupported SPDX version %q", e.cfg.Version)
 	}

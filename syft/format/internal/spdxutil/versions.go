@@ -15,6 +15,7 @@ func SupportedVersions(id sbom.FormatID) []string {
 	versions := []string{
 		"2.2",
 		"2.3",
+		"3.0",
 	}
 
 	if id != JSONFormatID {
