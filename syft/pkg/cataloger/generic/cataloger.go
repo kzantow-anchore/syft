@@ -6,6 +6,7 @@ import (
 	"github.com/anchore/go-logger"
 	"github.com/anchore/syft/internal"
 	"github.com/anchore/syft/internal/log"
+	"github.com/anchore/syft/internal/unknown"
 	"github.com/anchore/syft/syft/artifact"
 	"github.com/anchore/syft/syft/file"
 	"github.com/anchore/syft/syft/linux"
@@ -62,7 +63,7 @@ func (c *Cataloger) WithParserByGlobs(parser Parser, globs ...string) *Cataloger
 
 				matches, err := resolver.FilesByGlob(g)
 				if err != nil {
-					log.Warnf("unable to process glob=%q: %+v", g, err)
+					log.Debugf("unable to process glob=%q: %+v", g, err)
 					continue
 				}
 				requests = append(requests, makeRequests(parser, matches)...)
@@ -80,7 +81,7 @@ func (c *Cataloger) WithParserByMimeTypes(parser Parser, types ...string) *Catal
 			log.WithFields("mimetypes", types).Trace("searching for paths matching mimetype")
 			matches, err := resolver.FilesByMIMEType(types...)
 			if err != nil {
-				log.Warnf("unable to process mimetypes=%+v: %+v", types, err)
+				log.Debugf("unable to process mimetypes=%+v: %+v", types, err)
 				return nil
 			}
 			requests = append(requests, makeRequests(parser, matches)...)
@@ -99,7 +100,7 @@ func (c *Cataloger) WithParserByPath(parser Parser, paths ...string) *Cataloger 
 
 				matches, err := resolver.FilesByPath(p)
 				if err != nil {
-					log.Warnf("unable to process path=%q: %+v", p, err)
+					log.Debugf("unable to process path=%q: %+v", p, err)
 					continue
 				}
 				requests = append(requests, makeRequests(parser, matches)...)
@@ -151,8 +152,9 @@ func (c *Cataloger) Name() string {
 func (c *Cataloger) Catalog(ctx context.Context, resolver file.Resolver) ([]pkg.Package, []artifact.Relationship, error) {
 	var packages []pkg.Package
 	var relationships []artifact.Relationship
+	var errs error
 
-	logger := log.Nested("cataloger", c.upstreamCataloger)
+	lgr := log.Nested("cataloger", c.upstreamCataloger)
 
 	env := Environment{
 		// TODO: consider passing into the cataloger, this would affect the cataloger interface (and all implementations). This can be deferred until later.
@@ -164,9 +166,10 @@ func (c *Cataloger) Catalog(ctx context.Context, resolver file.Resolver) ([]pkg.
 
 		log.WithFields("path", location.RealPath).Trace("parsing file contents")
 
-		discoveredPackages, discoveredRelationships, err := invokeParser(ctx, resolver, location, logger, parser, &env)
+		discoveredPackages, discoveredRelationships, err := invokeParser(ctx, resolver, location, lgr, parser, &env)
 		if err != nil {
-			continue // logging is handled within invokeParser
+			// parsers may return errors and valid packages / relationships
+			errs = unknown.Append(errs, location, err)
 		}
 
 		for _, p := range discoveredPackages {
@@ -176,7 +179,7 @@ func (c *Cataloger) Catalog(ctx context.Context, resolver file.Resolver) ([]pkg.
 
 		relationships = append(relationships, discoveredRelationships...)
 	}
-	return c.process(ctx, resolver, packages, relationships, nil)
+	return c.process(ctx, resolver, packages, relationships, errs)
 }
 
 func (c *Cataloger) process(ctx context.Context, resolver file.Resolver, pkgs []pkg.Package, rels []artifact.Relationship, err error) ([]pkg.Package, []artifact.Relationship, error) {
@@ -189,18 +192,18 @@ func (c *Cataloger) process(ctx context.Context, resolver file.Resolver, pkgs []
 func invokeParser(ctx context.Context, resolver file.Resolver, location file.Location, logger logger.Logger, parser Parser, env *Environment) ([]pkg.Package, []artifact.Relationship, error) {
 	contentReader, err := resolver.FileContentsByLocation(location)
 	if err != nil {
-		logger.WithFields("location", location.RealPath, "error", err).Warn("unable to fetch contents")
+		logger.WithFields("location", location.RealPath, "error", err).Debug("unable to fetch contents")
 		return nil, nil, err
 	}
 	defer internal.CloseAndLogError(contentReader, location.AccessPath)
 
 	discoveredPackages, discoveredRelationships, err := parser(ctx, resolver, env, file.NewLocationReadCloser(location, contentReader))
 	if err != nil {
-		logger.WithFields("location", location.RealPath, "error", err).Warnf("cataloger failed")
-		return nil, nil, err
+		// these errors are propagated up, and are likely to be coordinate errors
+		logger.WithFields("location", location.RealPath, "error", err).Trace("cataloger returned errors")
 	}
 
-	return discoveredPackages, discoveredRelationships, nil
+	return discoveredPackages, discoveredRelationships, err
 }
 
 // selectFiles takes a set of file trees and resolves and file references of interest for future cataloging

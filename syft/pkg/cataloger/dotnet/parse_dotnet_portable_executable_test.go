@@ -297,6 +297,16 @@ func TestParseDotnetPortableExecutable(t *testing.T) {
 	}
 }
 
+func Test_corruptDotnetPE(t *testing.T) {
+	p := dotnetPortableExecutableParser{
+		cfg: DefaultCatalogerConfig(),
+	}
+	pkgtest.NewCatalogTester().
+		FromFile(t, "test-fixtures/glob-paths/src/something.exe").
+		WithError().
+		TestParser(t, p.parseDotnetPortableExecutable)
+}
+
 func Test_extractVersion(t *testing.T) {
 	tests := []struct {
 		input    string

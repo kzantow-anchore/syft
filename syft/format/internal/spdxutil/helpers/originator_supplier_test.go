@@ -12,6 +12,7 @@ import (
 func Test_OriginatorSupplier(t *testing.T) {
 	completionTester := packagemetadata.NewCompletionTester(t,
 		pkg.BinarySignature{},
+		pkg.BitnamiSBOMEntry{},
 		pkg.CocoaPodfileLockEntry{},
 		pkg.ConanV1LockEntry{},
 		pkg.ConanV2LockEntry{}, // the field Username might be the username of either the package originator or the supplier (unclear currently)
@@ -19,6 +20,7 @@ func Test_OriginatorSupplier(t *testing.T) {
 		pkg.ConaninfoEntry{},
 		pkg.DartPubspecLockEntry{},
 		pkg.DotnetDepsEntry{},
+		pkg.DotnetPackagesLockEntry{},
 		pkg.ELFBinaryPackageNoteJSONPayload{},
 		pkg.ElixirMixLockEntry{},
 		pkg.ErlangRebarLockEntry{},
@@ -41,6 +43,7 @@ func Test_OriginatorSupplier(t *testing.T) {
 		pkg.RustCargoLockEntry{},
 		pkg.SwiftPackageManagerResolvedEntry{},
 		pkg.SwiplPackEntry{},
+		pkg.OpamPackage{},
 		pkg.YarnLockEntry{},
 	)
 	tests := []struct {
@@ -86,6 +89,14 @@ func Test_OriginatorSupplier(t *testing.T) {
 			},
 			originator: "",
 			supplier:   "Person: someone",
+		},
+		{
+			name: "from bitnami",
+			input: pkg.Package{
+				Metadata: pkg.BitnamiSBOMEntry{},
+			},
+			originator: "Organization: Bitnami",
+			supplier:   "Organization: Bitnami",
 		},
 		{
 			name: "from dotnet -- PE binary",
@@ -176,6 +187,18 @@ func Test_OriginatorSupplier(t *testing.T) {
 				},
 			},
 			// note: empty!
+		},
+		{
+			name: "from java -- jvm installation",
+			input: pkg.Package{
+				Metadata: pkg.JavaVMInstallation{
+					Release: pkg.JavaVMRelease{
+						Implementor: "Oracle",
+					},
+				},
+			},
+			originator: "Organization: Oracle",
+			supplier:   "Organization: Oracle",
 		},
 		{
 			name: "from linux kernel module",
@@ -349,6 +372,22 @@ func Test_OriginatorSupplier(t *testing.T) {
 			},
 			originator: "Person: auth (auth@auth.gov)",
 			supplier:   "Person: me (me@auth.com)",
+		},
+		{
+			name: "from ocaml opam",
+			input: pkg.Package{
+				Metadata: pkg.OpamPackage{},
+			},
+			originator: "",
+			supplier:   "",
+		},
+		{
+			name: "from terraform lock",
+			input: pkg.Package{
+				Metadata: pkg.TerraformLockProviderEntry{},
+			},
+			originator: "",
+			supplier:   "",
 		},
 	}
 	for _, test := range tests {

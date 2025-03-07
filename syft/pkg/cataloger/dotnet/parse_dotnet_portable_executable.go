@@ -18,40 +18,38 @@ import (
 	"github.com/anchore/syft/syft/pkg/cataloger/generic"
 )
 
-var _ generic.Parser = parseDotnetPortableExecutable
+type dotnetPortableExecutableParser struct {
+	cfg CatalogerConfig
+}
 
-func parseDotnetPortableExecutable(_ context.Context, _ file.Resolver, _ *generic.Environment, f file.LocationReadCloser) ([]pkg.Package, []artifact.Relationship, error) {
+func (p dotnetPortableExecutableParser) parseDotnetPortableExecutable(_ context.Context, _ file.Resolver, _ *generic.Environment, f file.LocationReadCloser) ([]pkg.Package, []artifact.Relationship, error) {
 	by, err := io.ReadAll(f)
 	if err != nil {
 		return nil, nil, fmt.Errorf("unable to read file: %w", err)
 	}
 
-	peFile, err := pe.NewBytes(by, &pe.Options{})
+	peFile, err := pe.NewBytes(by, &pe.Options{DisableCertValidation: !p.cfg.EnableCertificateValidation})
 	if err != nil {
-		// TODO: known-unknown
 		log.Tracef("unable to create PE instance for file '%s': %v", f.RealPath, err)
-		return nil, nil, nil
+		return nil, nil, err
 	}
 
 	err = peFile.Parse()
 	if err != nil {
-		// TODO: known-unknown
 		log.Tracef("unable to parse PE file '%s': %v", f.RealPath, err)
-		return nil, nil, nil
+		return nil, nil, err
 	}
 
 	versionResources, err := peFile.ParseVersionResources()
 	if err != nil {
-		// TODO: known-unknown
 		log.Tracef("unable to parse version resources in PE file: %s: %v", f.RealPath, err)
-		return nil, nil, nil
+		return nil, nil, fmt.Errorf("unable to parse version resources in PE file: %w", err)
 	}
 
 	dotNetPkg, err := buildDotNetPackage(versionResources, f)
 	if err != nil {
-		// TODO: known-unknown
-		log.Tracef("unable to build dotnet package: %v", err)
-		return nil, nil, nil
+		log.Tracef("unable to build dotnet package for: %v %v", f.RealPath, err)
+		return nil, nil, err
 	}
 
 	return []pkg.Package{dotNetPkg}, nil, nil
@@ -60,12 +58,12 @@ func parseDotnetPortableExecutable(_ context.Context, _ file.Resolver, _ *generi
 func buildDotNetPackage(versionResources map[string]string, f file.LocationReadCloser) (dnpkg pkg.Package, err error) {
 	name := findName(versionResources)
 	if name == "" {
-		return dnpkg, fmt.Errorf("unable to find PE name in file: %s", f.RealPath)
+		return dnpkg, fmt.Errorf("unable to find PE name in file")
 	}
 
 	version := findVersion(versionResources)
 	if version == "" {
-		return dnpkg, fmt.Errorf("unable to find PE version in file: %s", f.RealPath)
+		return dnpkg, fmt.Errorf("unable to find PE version in file")
 	}
 
 	metadata := pkg.DotnetPortableExecutableEntry{

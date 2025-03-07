@@ -9,6 +9,7 @@ import (
 	"github.com/scylladb/go-set/strset"
 
 	"github.com/anchore/syft/internal/bus"
+	"github.com/anchore/syft/internal/licenses"
 	"github.com/anchore/syft/internal/sbomsync"
 	"github.com/anchore/syft/internal/task"
 	"github.com/anchore/syft/syft/artifact"
@@ -51,6 +52,7 @@ func CreateSBOM(ctx context.Context, src source.Source, cfg *CreateSBOMConfig) (
 				DataGeneration: cfg.DataGeneration,
 				Packages:       cfg.Packages,
 				Files:          cfg.Files,
+				Licenses:       cfg.Licenses,
 				Catalogers:     *audit,
 				ExtraConfigs:   cfg.ToolConfiguration,
 			},
@@ -59,6 +61,16 @@ func CreateSBOM(ctx context.Context, src source.Source, cfg *CreateSBOMConfig) (
 			Packages: pkg.NewCollection(),
 		},
 	}
+
+	// inject a single license scanner and content config for all package cataloging tasks into context
+	licenseScanner, err := licenses.NewDefaultScanner(
+		licenses.WithIncludeLicenseContent(cfg.Licenses.IncludeUnkownLicenseContent),
+		licenses.WithCoverage(cfg.Licenses.Coverage),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("could not build licenseScanner for cataloging: %w", err)
+	}
+	ctx = licenses.SetContextLicenseScanner(ctx, licenseScanner)
 
 	catalogingProgress := monitorCatalogingTask(src.ID(), taskGroups)
 	packageCatalogingProgress := monitorPackageCatalogingTask()
@@ -121,6 +133,9 @@ func monitorCatalogingTask(srcID artifact.ID, tasks [][]task.Task) *monitor.Cata
 func formatTaskNames(tasks []task.Task) []string {
 	set := strset.New()
 	for _, td := range tasks {
+		if td == nil {
+			continue
+		}
 		set.Add(td.Name())
 	}
 	list := set.List()
