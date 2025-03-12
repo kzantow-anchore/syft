@@ -3,15 +3,13 @@ package spdxjson
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/anchore/syft/internal/log"
-	spdxJson "github.com/spdx/tools-golang/json"
-	"github.com/spdx/tools-golang/spdx/v3/v3_0"
 	"io"
 
 	"github.com/spdx/tools-golang/convert"
 	"github.com/spdx/tools-golang/spdx/v2/v2_1"
 	"github.com/spdx/tools-golang/spdx/v2/v2_2"
 	"github.com/spdx/tools-golang/spdx/v2/v2_3"
+	"github.com/spdx/tools-golang/spdx/v3/v3_0"
 
 	"github.com/anchore/syft/syft/format/common/spdxhelpers"
 	"github.com/anchore/syft/syft/format/internal/spdxutil"
@@ -83,14 +81,9 @@ func (e encoder) Encode(writer io.Writer, s sbom.SBOM) error {
 		encodeDoc = doc
 
 	case "3.0":
-		doc := v3_0.NewDocument(&v3_0.SoftwareAgent{
-			Name: "syft",
-		})
+		doc := &v3_0.Document{}
 		err = convert.Document(latestDoc, doc)
-		if err != nil {
-			log.Warn(err)
-		}
-		return spdxJson.Write(doc, writer, spdxJson.EscapeHTML(false), spdxJson.Indent(""))
+		encodeDoc = doc
 	default:
 		return fmt.Errorf("unsupported SPDX version %q", e.cfg.Version)
 	}
