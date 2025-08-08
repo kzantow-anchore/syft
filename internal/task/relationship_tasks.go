@@ -49,6 +49,11 @@ func finalizeRelationships(resolver file.Resolver, builder sbomsync.Builder, cfg
 		relationship.ByFileOwnershipOverlapWorker(resolver, accessor)
 	}
 
+	// some package searches can be augmented with version information from the binary cataloger
+	if cfg.ReplaceUnknownVersionsWithKnownBinaryVersions {
+		relationship.ReplaceUnknownVersionsWithKnownBinaryVersions(accessor)
+	}
+
 	// conditionally remove binary packages based on file ownership overlap relationships found
 	// https://github.com/anchore/syft/issues/931
 	if cfg.ExcludeBinaryPackagesWithFileOwnershipOverlap {

@@ -6,7 +6,9 @@ import (
 
 	"github.com/anchore/syft/internal/sbomsync"
 	"github.com/anchore/syft/syft/artifact"
+	"github.com/anchore/syft/syft/cataloging"
 	"github.com/anchore/syft/syft/pkg"
+	"github.com/anchore/syft/syft/pkg/cataloger/binary"
 	"github.com/anchore/syft/syft/sbom"
 )
 
@@ -38,6 +40,30 @@ func ExcludeBinariesByFileOwnershipOverlap(accessor sbomsync.Accessor) {
 			if idToRemove := excludeByFileOwnershipOverlap(r, s.Artifacts.Packages); idToRemove != "" {
 				s.Artifacts.Packages.Delete(idToRemove)
 				s.Relationships = RemoveRelationshipsByID(s.Relationships, idToRemove)
+			}
+		}
+	})
+}
+
+func ReplaceUnknownVersionsWithKnownBinaryVersions(accessor sbomsync.Accessor) {
+	accessor.WriteToSBOM(func(s *sbom.SBOM) {
+		classifierName := binary.NewClassifierCataloger(binary.ClassifierCatalogerConfig{}).Name()
+		for _, p := range s.Artifacts.Packages.Sorted() { // use Sorted to get a copy
+			if p.FoundBy != classifierName && isUnknownVersion(p.Version) {
+				for _, matching := range s.Artifacts.Packages.PackagesByName(p.Name) {
+					if matching.FoundBy == classifierName && matching.Type == p.Type && !isUnknownVersion(matching.Version) {
+						// update the matching versionless package
+						p.Version = matching.Version
+						s.Artifacts.Packages.Delete(p.ID())
+						s.Artifacts.Packages.Add(p)
+
+						// remove the  binary package
+						id := matching.ID()
+						s.Artifacts.Packages.Delete(id)
+						s.Relationships = RemoveRelationshipsByID(s.Relationships, id)
+						break
+					}
+				}
 			}
 		}
 	})
@@ -151,4 +177,8 @@ func identifyOverlappingBitnamiRelationship(parent *pkg.Package, child *pkg.Pack
 	}
 
 	return child.ID()
+}
+
+func isUnknownVersion(version string) bool {
+	return version == "" || version == cataloging.UnknownStubValue
 }

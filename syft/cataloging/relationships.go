@@ -13,6 +13,11 @@ type RelationshipsConfig struct {
 	// For example, if a binary package representing the /bin/python binary is discovered and there is a python RPM package installed which claims to
 	// orn /bin/python, then the binary package will be excluded from the catalog altogether if this configuration is set to true.
 	ExcludeBinaryPackagesWithFileOwnershipOverlap bool `yaml:"exclude-binary-packages-with-file-ownership-overlap" json:"exclude-binary-packages-with-file-ownership-overlap" mapstructure:"exclude-binary-packages-with-file-ownership-overlap"`
+
+	// ReplaceUnknownVersionsWithKnownBinaryVersions merges versions identified in the binary cataloger into matching packages from different
+	// catalogers, dropping the binary version; this allows specific identification of go packages built without version information without
+	// enabling the broad golang binary version match
+	ReplaceUnknownVersionsWithKnownBinaryVersions bool `yaml:"replace-unknown-versions-with-known-binary-versions" json:"replace-unknown-versions-with-known-binary-versions" mapstructure:"replace-unknown-versions-with-known-binary-versions"`
 }
 
 func DefaultRelationshipsConfig() RelationshipsConfig {
@@ -20,6 +25,7 @@ func DefaultRelationshipsConfig() RelationshipsConfig {
 		PackageFileOwnership:                          true,
 		PackageFileOwnershipOverlap:                   true,
 		ExcludeBinaryPackagesWithFileOwnershipOverlap: true,
+		ReplaceUnknownVersionsWithKnownBinaryVersions: true,
 	}
 }
 
@@ -35,5 +41,10 @@ func (c RelationshipsConfig) WithPackageFileOwnershipOverlap(overlap bool) Relat
 
 func (c RelationshipsConfig) WithExcludeBinaryPackagesWithFileOwnershipOverlap(exclude bool) RelationshipsConfig {
 	c.ExcludeBinaryPackagesWithFileOwnershipOverlap = exclude
+	return c
+}
+
+func (c RelationshipsConfig) WithReplaceUnknownVersionsWithKnownBinaryVersions(replace bool) RelationshipsConfig {
+	c.ReplaceUnknownVersionsWithKnownBinaryVersions = replace
 	return c
 }
