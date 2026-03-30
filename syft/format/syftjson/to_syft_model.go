@@ -307,16 +307,18 @@ func toSyftDescriptor(d model.Descriptor) sbom.Descriptor {
 		Name:          d.Name,
 		Version:       d.Version,
 		Configuration: d.Configuration,
+		ArtifactID:    artifact.ID(d.ArtifactID),
 	}
 }
 
 func toSyftSourceData(s model.Source) *source.Description {
 	return &source.Description{
-		ID:       s.ID,
-		Name:     s.Name,
-		Version:  s.Version,
-		Supplier: s.Supplier,
-		Metadata: s.Metadata,
+		ID:         s.ID,
+		Name:       s.Name,
+		Version:    s.Version,
+		Supplier:   s.Supplier,
+		ArtifactID: artifact.ID(s.ArtifactID),
+		Metadata:   s.Metadata,
 	}
 }
 

@@ -156,6 +156,32 @@ func Test_toSyftSourceData(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "edit",
+			src: model.Source{
+				ID:      "the-id",
+				Name:    "some-name",
+				Version: "some-version",
+				Type:    "edit",
+				Metadata: source.EditMetadata{
+					OriginalSource: source.Description{
+						ID:   "orig-id",
+						Name: "orig-name",
+					},
+				},
+			},
+			expected: &source.Description{
+				ID:      "the-id",
+				Name:    "some-name",
+				Version: "some-version",
+				Metadata: source.EditMetadata{
+					OriginalSource: source.Description{
+						ID:   "orig-id",
+						Name: "orig-name",
+					},
+				},
+			},
+		},
 		// below are regression tests for when the name/version are not provided
 		// historically we've hoisted up the name/version from the metadata, now it is a simple pass-through
 		{

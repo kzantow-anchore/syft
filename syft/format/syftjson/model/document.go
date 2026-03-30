@@ -45,6 +45,9 @@ type Descriptor struct {
 
 	// Configuration contains the tool configuration used during SBOM generation.
 	Configuration interface{} `json:"configuration,omitempty"`
+
+	// ArtifactID is an optional reference to a specific package this SBOM describes.
+	ArtifactID string `json:"artifactID,omitempty"`
 }
 
 // Schema specifies the JSON schema version and URL reference that defines the structure and validation rules for this document format.

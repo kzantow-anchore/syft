@@ -34,6 +34,7 @@ type Descriptor struct {
 	Name          string
 	Version       string
 	Configuration interface{}
+	ArtifactID    artifact.ID // optional reference to a specific package this SBOM describes
 }
 
 // RelationshipsSorted returns a sorted slice of all relationships

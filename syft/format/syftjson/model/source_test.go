@@ -222,6 +222,29 @@ func TestSource_UnmarshalJSON(t *testing.T) {
 			},
 		},
 		{
+			name: "edit",
+			input: []byte(`{
+				"id": "foobar",
+				"type": "edit",
+				"metadata": {
+					"originalSource": {
+						"ID": "orig-id",
+						"Name": "orig-name"
+					}
+				}
+			}`),
+			expected: &Source{
+				ID:   "foobar",
+				Type: "edit",
+				Metadata: source.EditMetadata{
+					OriginalSource: source.Description{
+						ID:   "orig-id",
+						Name: "orig-name",
+					},
+				},
+			},
+		},
+		{
 			name: "unknown source type",
 			input: []byte(`{
 				"id": "foobar",

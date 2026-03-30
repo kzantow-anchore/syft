@@ -189,6 +189,38 @@ func Test_toSourceModel(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "edit",
+			src: source.Description{
+				ID:      "test-id",
+				Name:    "some-name",
+				Version: "some-version",
+				Metadata: source.EditMetadata{
+					OriginalSource: source.Description{
+						ID:   "orig-id",
+						Name: "orig-name",
+						Metadata: source.DirectoryMetadata{
+							Path: "some/path",
+						},
+					},
+				},
+			},
+			expected: model.Source{
+				ID:      "test-id",
+				Name:    "some-name",
+				Version: "some-version",
+				Type:    "edit",
+				Metadata: source.EditMetadata{
+					OriginalSource: source.Description{
+						ID:   "orig-id",
+						Name: "orig-name",
+						Metadata: source.DirectoryMetadata{
+							Path: "some/path",
+						},
+					},
+				},
+			},
+		},
 		// below are regression tests for when the name/version are not provided
 		// historically we've hoisted up the name/version from the metadata, now it is a simple pass-through
 		{

@@ -82,6 +82,7 @@ func toDescriptor(d sbom.Descriptor) model.Descriptor {
 		Name:          d.Name,
 		Version:       d.Version,
 		Configuration: d.Configuration,
+		ArtifactID:    string(d.ArtifactID),
 	}
 }
 
@@ -317,12 +318,13 @@ func toRelationshipModel(relationships []artifact.Relationship) []model.Relation
 // toSourceModel creates a new source object to be represented into JSON.
 func toSourceModel(src source.Description) model.Source {
 	m := model.Source{
-		ID:       src.ID,
-		Name:     src.Name,
-		Version:  src.Version,
-		Supplier: src.Supplier,
-		Type:     sourcemetadata.JSONName(src.Metadata),
-		Metadata: src.Metadata,
+		ID:         src.ID,
+		Name:       src.Name,
+		Version:    src.Version,
+		Supplier:   src.Supplier,
+		ArtifactID: string(src.ArtifactID),
+		Type:       sourcemetadata.JSONName(src.Metadata),
+		Metadata:   src.Metadata,
 	}
 
 	switch metadata := src.Metadata.(type) {

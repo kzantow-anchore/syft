@@ -26,6 +26,9 @@ type Source struct {
 	// Supplier is supplier information, which can be user-provided for NTIA minimum elements compliance.
 	Supplier string `json:"supplier,omitempty"`
 
+	// ArtifactID references the specific artifact this source describes.
+	ArtifactID string `json:"artifactID,omitempty"`
+
 	// Type is the source type (e.g., "image", "directory", "file").
 	Type string `json:"type"`
 
@@ -35,13 +38,14 @@ type Source struct {
 
 // sourceUnpacker is used to unmarshal Source objects
 type sourceUnpacker struct {
-	ID       string          `json:"id,omitempty"`
-	Name     string          `json:"name"`
-	Version  string          `json:"version"`
-	Supplier string          `json:"supplier,omitempty"`
-	Type     string          `json:"type"`
-	Metadata json.RawMessage `json:"metadata"`
-	Target   json.RawMessage `json:"target"` // pre-v9 schema support
+	ID         string          `json:"id,omitempty"`
+	Name       string          `json:"name"`
+	Version    string          `json:"version"`
+	Supplier   string          `json:"supplier,omitempty"`
+	ArtifactID string          `json:"artifactID,omitempty"`
+	Type       string          `json:"type"`
+	Metadata   json.RawMessage `json:"metadata"`
+	Target     json.RawMessage `json:"target"` // pre-v9 schema support
 }
 
 // UnmarshalJSON populates a source object from JSON bytes.
@@ -55,6 +59,7 @@ func (s *Source) UnmarshalJSON(b []byte) error {
 	s.Name = unpacker.Name
 	s.Version = unpacker.Version
 	s.Supplier = unpacker.Supplier
+	s.ArtifactID = unpacker.ArtifactID
 	s.Type = unpacker.Type
 	s.ID = unpacker.ID
 
